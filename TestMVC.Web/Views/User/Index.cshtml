@@ -1,0 +1,132 @@
+﻿<div class="panel panel-default">
+    <div class="panel-heading">
+        Lista de usuarios
+        <a class="btn btn-primary pull-right" href="@Url.Action("Details","User")"><i class="fas fa-user"></i> Nuevo Usuario</a>
+    </div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTableUsers" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Sexo</th>
+                        <th>Estatus</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#dataTableUsers").DataTable({
+                order: [[0, "asc"]],
+                pageLength: 25,
+                language: {
+                    url: "//cdn.datatables.net/plug-ins/1.10.20/i18n/Spanish.json"
+                },
+                ajax: {
+                    url: "@Url.Action("GetUsers", "User")",
+                    dataSrc: ""
+                },
+                columns: [
+                    { "data": "Id" },
+                    { "data": "Username" },
+                    { "data": "Email" },
+                    { "data": "Genre" },
+                    { "data": "Status" },
+                    {
+                        "mRender": function (data, type, full) {
+                            var id = full['Id'];
+
+                            return '<a href="#" class="userEdit" data-id="' + id + '" ><i class="fas fa-pencil-alt" style="font- size: 16px;" data-original-title="Edit"> Editar</i></a> | <a href="#" class="userEnable" data-id="' + id + '"><i class="ui-tooltip fa fa-check-circle" style="font- size: 16px;" data-original-title="Enable"> Habilitar</i></a> | <a href="#" class="userDisable" data-id="' + id + '"><i class="ui-tooltip fa fa-minus-circle" style="font- size: 16px;" data-original-title="Disable"> Deshabilitar</i></a> | <a href="#" class="userDeleted" data-id="' + id + '"><i class="fas fa-trash-alt" style="font- size: 16px;" data-original-title="Delete"> Borrar</i></a>';
+                        }
+                    }
+                ]
+            });
+
+            $("#dataTableUsers").on('click', "a.userEdit", function () {
+                let Id = $(this).data("id");
+
+                window.location.href = '@Url.Action("Details", "User")?id=' + Id;
+            });
+
+            $("#dataTableUsers").on('click', "a.userEnable", function () {
+
+                let id = $(this).data("id");
+
+                $.ajax({
+                    url: "@Url.Action("ActivateUser", "User")?id=" + id,
+                    type: "POST",
+                    success: function (response) {
+                        if (response.Operation === true) {
+                            window.location.reload();
+                        }
+                    }
+                });
+            });
+
+            $("#dataTableUsers").on('click', "a.userDisable", function () {
+
+                let id = $(this).data("id");
+
+                $.ajax({
+                    url: "@Url.Action("DesactivateUser", "User")?id=" + id,
+                    type: "POST",
+                    success: function (response) {
+                        if (response.Operation === true) {
+                            window.location.reload();
+                        }
+                    }
+                });
+            });
+
+            $("#dataTableUsers").on('click', "a.userDeleted", function () {
+                let Id = $(this).data("id");
+
+                Swal.fire({
+                    title: '',
+                    text: 'Seguro desea borrar el Usuario?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: `Aceptar`,
+                }).then((isConfirm) => {
+                    if (isConfirm.value) {
+
+                        $.ajax({
+                            url: '@Url.Action("DeleteUser", "User")?id=' + Id,
+                            type: "POST",
+                            success: function (data) {
+                                if (data.Operation === true) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Acción Realizada!',
+                                        text: "Usuario eliminado!",
+                                        showCancelButton: false,
+                                        confirmButtonText: `OK`,
+                                    }).then((result) => {
+                                        location.reload();
+                                    })
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: '.',
+                                        text: resp.Message
+                                    })
+                                }
+                            }
+                        });
+                    } else {
+                        location.reload();
+                    }
+                });
+            });
+        });
+    </script>
+}

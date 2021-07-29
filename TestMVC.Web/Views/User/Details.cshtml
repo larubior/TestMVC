@@ -1,0 +1,111 @@
+﻿@model TestMVC.Model.User.UserViewModel
+
+<div class="container">
+    <div class="col-md-12">
+        <form id="formUser">
+            <div class="row">
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.Id)
+                    <div class="form-group" style="width: 100%">
+                        @Html.TextBoxFor(m => m.Id, new { @class = "form-control", @readonly = true })
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.Email)
+                    <div class="form-group" style="width: 100%">
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.Username)
+                    <div class="form-group">
+                        @Html.TextBoxFor(m => m.Username, new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.Genre)
+                    <div class="form-group">
+                        @Html.DropDownListFor(m => m.Genre,
+                        new SelectList(
+                           new List<Object>{
+                                    new { value = "M" , text = "Masculino" },
+                                    new { value = "F" , text = "Femenino" }
+                               }, "value", "text", Model.Genre))
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.Password)
+                    <div class="form-group">
+                        @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.ConfirmPassword)
+                    <div class="form-group">
+                        @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <button id="back" class="btn btn-default" type="reset">Cerrar</button>
+                </div>
+                <div class="col-md-6">
+                    <button id="saveUser" class="btn btn-success" type="button">Guardar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('#back').click(function () {
+                parent.history.back();
+                return false;
+            });
+
+            // Password Fake
+            if ($("#Id").val() != null)
+            {
+                $("#Password").val('Ma$ter12');
+                $("#ConfirmPassword").val('Ma$ter12');
+            }
+
+            $("#saveUser").click(function (e) {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("SaveUser", "User")",
+                    data: $('#formUser').serialize(),
+                    dataType: "json",
+                    success: function (resp) {
+                        if (resp.Operation === true) {
+                            Swal.fire({
+                                title: "",
+                                text: "Accion realizada",
+                                icon: "success",
+                                confirmButtonColor: "#DD6B55",
+                                showCancelButton: false
+                            }).then(() => {
+                                window.location.href = '@Url.Action("Index", "User")';
+                            });
+                        } else {
+                            Swal.fire({
+                                title: '',
+                                text: resp.Message,
+                                icon: 'error'
+                            })
+                        }
+                    }
+                });
+            });
+
+        });
+    </script>
+}
